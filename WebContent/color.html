@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <script src="lib/jquery-1.10.1.min.js"></script>
+    <script src="lib/d3.v3.min.js"></script>
+    <script>
+      $(document).ready(function(){
+    	  
+    	var colors = 
+/*     		[
+					'#0000FF',
+					'#00FFFF',
+					'#00FF00',
+					'#FFFF00',
+					'#FF0000'
+					]; */
+			//["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];
+			["#ffffd9","#edf8b1","#c7e9b4", "#7fcdbb"];		
+    	
+    	  
+        var min = -100;
+        var mid =    0;
+        var max = +100;
+        var domain = d3.range(min, max, (max - min) / (colors.length - 1));
+        domain.push(max);
+        for (var i = 0; i < domain.length; i++) {
+        	console.log(domain[i]);
+        }
+
+        // linear scale
+        /*
+        var linearScale = d3.scale
+                           .linear()
+                           .domain([min,mid,max])
+                           .range(['#FF0000','#0000FF','#00FF00']);
+                           //.range(['red','blue','green']);
+                           //.range([16711680, 255, 65280]);
+        */
+        var linearScale = d3.scale
+                           .linear()
+                           .domain(domain)
+                           .range(colors);
+                           //.range(['red','blue','green']);
+                           //.range([16711680, 255, 65280]);
+
+        // power scale
+        var powerScale = d3.scale
+                           .pow()
+                           .exponent(4)
+                           .domain([min,mid,max])
+                           .range(['red','white','green']);
+
+
+        // custom scale
+        var _customScale1 = d3.scale.pow().exponent(4).domain([-100,0  ]).range(['red'  ,'white']);
+        var _customScale2 = d3.scale.pow().exponent(4).domain([0   ,100]).range(['white','green']);
+        var customScale1  = function(x){
+          return   x < 0 
+                 ? _customScale1(x) 
+                 : _customScale2(x);
+        }
+
+        
+        for(var i=min;i<=max;i++) {
+          $("#linear-scale"  ).append('<td bgcolor="' +linearScale(i)+ '" height="10" width="4"></td>');
+          $("#power-scale"   ).append('<td bgcolor="' +powerScale(i) + '" height="10" width="4"></td>');
+          $("#custom-scale1" ).append('<td bgcolor="' +customScale1(i) + '" height="10" width="4"></td>');
+        };
+
+        colors = ["#ffffcc","#ffeda0","#fed976","#feb24c","#fd8d3c","#fc4e2a","#e31a1c","#bd0026","#800026"];
+		linearScale.domain(d3.range(min, max, (max - min) / (colors.length - 1)));
+        linearScale.range(colors);
+		
+        for(var i=min;i<=max;i++) {
+            $("#linear-scale"  ).append('<td bgcolor="' +linearScale(i)+ '" height="10" width="4"></td>');
+            $("#power-scale"   ).append('<td bgcolor="' +powerScale(i) + '" height="10" width="4"></td>');
+            $("#custom-scale1" ).append('<td bgcolor="' +customScale1(i) + '" height="10" width="4"></td>');
+          };
+      });
+
+    </script>
+
+    <table style="border-collapse: collapse;">
+      <tr id="linear-scale">   <td>Linear scale   </td> </tr>
+      <tr id="power-scale">    <td>Power  scale   </td> </tr>
+      <tr id="custom-scale1">  <td>Custom scale #1</td> </tr>
+    </table>
+  </body>
+</html>

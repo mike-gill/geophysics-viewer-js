@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="css/dc.css"/>
+<script type="text/javascript" src="lib/d3.v3.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="lib/crossfilter.min.js"></script>
+<script type="text/javascript" src="lib/dc.js"></script>
+</head>
+<body>
+
+<!-- A div anchor that can be identified by id -->
+<div id="readingsBarChart" style="clear:both;">
+    <!-- Title or anything you want to add above the chart -->
+    <span>Readings distribution</span>
+    <!--
+        if a link with css class "reset" is present then the chart
+        will automatically turn it on/off based on whether there is filter
+        set on this chart (slice selection for pie chart and brush
+        selection for bar chart)
+     -->
+    <a class="reset" href="javascript:gainOrLossChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+    <!--
+        dc.js will also automatically inject applied current filter value into
+        any html element with css class set to "filter"
+    -->
+    <span class="reset" style="display: none;clear: both">Current filter: <span class="filter"></span></span><br/>
+</div>
+
+<script type="text/javascript">
+
+
+numBars = 19;
+
+readings = [];
+for (var x = 0; x < 20; x++) {
+	for (var y = 0; y < 20; y++) {
+		readings.push({
+			x: x,
+			y: y,
+			z: x
+		});
+	}
+}
+
+minReading = d3.min(readings, function(d) { return d.z; });
+maxReading = d3.max(readings, function(d) { return d.z; });
+scale = d3.scale.linear()
+					.domain([minReading, maxReading])
+					.rangeRound([0, numBars]);
+
+var cf = crossfilter(readings);
+var all = cf.groupAll();
+var dimCategory = cf.dimension(function(d) { return scale(d.z)})
+var categoryGroup = dimCategory.group().reduceSum(function(d) { return 1;});
+
+var a = categoryGroup.top(30);
+console.log("There are " + a[0].value + " " + a[0].key + " legs in my house.");
+console.log("There are " + a[1].value + " " + a[1].key + " legs in my house.");
+console.log("There are " + a[2].value + " " + a[2].key + " legs in my house.");
+console.log("There are " + a[3].value + " " + a[3].key + " legs in my house.");
+
+
+/* Create a bar chart and use the given css selector as anchor. You can also specify
+ * an optional chart group for this chart to be scoped within. When a chart belongs
+ * to a specific group then any interaction with such chart will only trigger redraw
+ * on other charts within the same chart group. */
+dc.barChart("#readingsBarChart")
+    .width(300) // (optional) define chart width, :default = 200
+    .height(100) // (optional) define chart height, :default = 200
+    .transitionDuration(500) // (optional) define chart transition duration, :default = 500
+    // (optional) define margins
+    .margins({top: 10, right: 50, bottom: 30, left: 40})
+    .dimension(dimCategory) // set dimension
+    .group(categoryGroup) // set group
+    // (optional) whether chart should rescale y axis to fit data, :default = false
+    .elasticY(true)
+    // (optional) when elasticY is on whether padding should be applied to y axis domain, :default=0
+    .yAxisPadding(1)
+    // (optional) whether chart should rescale x axis to fit data, :default = false
+    .elasticX(true)
+    // (optional) when elasticX is on whether padding should be applied to x axis domain, :default=0
+    .xAxisPadding(1)
+    // define x scale
+    .x(scale)
+    // (optional) set filter brush rounding
+    //.round(d3.time.month.round)
+    // define x axis units
+    .xUnits(dc.units.integers)
+    //.xUnits(function(start, end, xDomain) {return 20;})
+    // (optional) whether bar should be center to its x value, :default=false
+    .centerBar(true)
+    // (optional) set gap between bars manually in px, :default=2
+    //.barGap(1)
+    // (optional) render horizontal grid lines, :default=false
+    .renderHorizontalGridLines(true)
+    // (optional) render vertical grid lines, :default=false
+    .renderVerticalGridLines(true)
+    // (optional) add stacked group and custom value retriever
+    //.stack(monthlyMoveGroup, function(d){return d.value;})
+    // (optional) you can add multiple stacked group with or without custom value retriever
+    // if no custom retriever provided base chart's value retriever will be used
+    //.stack(monthlyMoveGroup)
+    // (optional) whether this chart should generate user interactive brush to allow range
+    // selection, :default=true.
+    .brushOn(true)
+    // (optional) whether svg title element(tooltip) should be generated for each bar using
+    // the given function, :default=no
+    //.title(function(d) { return "Value: " + d.value; })
+    // (optional) whether chart should render titles, :default = false
+    //.renderTitle(true);
+;
+
+//simply call renderAll() to render all charts on the page
+dc.renderAll();
+
+</script>
+
+</body>
+</html>
