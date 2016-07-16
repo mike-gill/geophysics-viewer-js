@@ -9,11 +9,11 @@ function GeoPlot(plotData) {
 			plotData.w, plotData.h);
 		var readings = plotData.readings;
 		for (var i = 0; i < readings.length; i++) {
-			var colorString = colorScale(readings[i].z);
+			var colorString = colorScale(readings[i]);
+			console.log(readings[i] + "  :  " + colorString);
 			this.setPixel(
-				imageData, 
-				readings[i].x, 
-				readings[i].y,
+				imageData,
+				i,
 				this.convertHexToRgb(colorString),
 				255
 			);
@@ -41,8 +41,8 @@ function GeoPlot(plotData) {
 		return canvas;
 	};
 
-	this.setPixel = function(imageData, x, y, colorObj, a) {
-		index = (x + y * imageData.width) * 4;
+	this.setPixel = function(imageData, i, colorObj, a) {
+		index = i * 4;
 		imageData.data[index+0] = colorObj.r;
 		imageData.data[index+1] = colorObj.g;
 		imageData.data[index+2] = colorObj.b;
@@ -52,21 +52,21 @@ function GeoPlot(plotData) {
 	this.convertHexToRgb = function(colorString){
 		/*Returns an object with red, green, and blue
 		properties in decimal value*/
- 
+
 		//Replace hex prefixes if present
 		colorString = colorString.replace("0x", "");
 		colorString = colorString.replace("#", "");
- 
+
 		//Easier to visualize bitshifts in hex
 		var rgb = parseInt(colorString, 16);
- 
+
 		//Extract rgb info
 		var colorObj = new Object();
 		colorObj.r = (rgb & (255 << 16)) >> 16;
 		colorObj.g = (rgb & (255 << 8)) >> 8;
-		colorObj.b = (rgb & 255); 
- 
-		return colorObj;   	
+		colorObj.b = (rgb & 255);
+
+		return colorObj;
 	};
 }
 
@@ -77,18 +77,27 @@ function GeoDataParser(callbackContext, callback) {
 	this.parseXyzUrl = function(url) {
 		d3.text(url, this.parseXyzText);
 	};
-	
+
 	this.parseXyzText = function(text) {
-		var readings = d3.csv.parseRows(text, function(d) {
-			console.log(d[1]);  
+		var readingsXyz = d3.csv.parseRows(text, function(d) {
+			console.log(d[1]);
 			return {
 			    x: parseInt(d[0]),
-			    y: parseInt(d[1]),
+			    y: parseInt(d[1]) - 1,
 			    z: parseFloat(d[2])
 			};
 		});
-		var w = Math.round(d3.max(readings, function(d) { return d.x; }));
-		var h = Math.round(d3.max(readings, function(d) { return d.y; }));
+		var w = Math.round(d3.max(readingsXyz, function(d) { return d.x + 1; }));
+		var h = Math.round(d3.max(readingsXyz, function(d) { return d.y; }));
+
+		readings = Array.apply(null, Array(w*h)).map(Number.prototype.valueOf, NaN);
+
+		var r;
+		for (var i = 0; i < readingsXyz.length; i++) {
+			r = readingsXyz[i];
+			readings[r.y * w + r.x] = r.z;
+		}
+
 		self.callback.call(self.callbackContext, new PlotData(w, h, readings));
 	};
 }

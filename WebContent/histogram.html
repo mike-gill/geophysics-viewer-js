@@ -62,9 +62,10 @@
 
 <script type="text/javascript">
 var colors = ["#ffffcc","#ffeda0","#fed976","#feb24c","#fd8d3c","#fc4e2a","#e31a1c","#bd0026","#800026"];
+colors = colors.reverse();
 
 d3.select("select").on("change", function() {
-	colors = colorbrewer[this.value][9];
+	colors = colorbrewer[this.value][9].reverse();
 	redrawImage();
 });
 
@@ -92,7 +93,7 @@ var plotData = {
 /*
 d3.text("D9_EarthRes 23Jun13 11-42-45_corrected_txt_XYZ.txt", function(text) {
 	  plotData.readings = d3.csv.parseRows(text, function(d) {
-			console.log(d[1]);  
+			console.log(d[1]);
 			return {
 			    x: parseInt(d[0]),
 			    y: parseInt(d[1]),
@@ -107,18 +108,18 @@ d3.text("D9_EarthRes 23Jun13 11-42-45_corrected_txt_XYZ.txt", function(text) {
 
 var geoPlot;
 var parser = new GeoDataParser(this,
-		function(data) { 
+		function(data) {
 			this.plotData = data;
-			this.geoPlot = new GeoPlot(data); 
+			this.geoPlot = new GeoPlot(data);
 			createBarChart();
-			var extent = d3.extent(data.readings, function(d) { return d.z; });
+			var extent = d3.extent(data.readings);
 			barChart.brush().extent(extent);
 			redrawImage();
 		});
-parser.parseXyzUrl("D9_EarthRes 23Jun13 11-42-45_corrected_txt_XYZ.txt")
+parser.parseXyzUrl("D2_EarthRes 15Jul11 20-29-46_corrected_txt_XYZ.txt")
 //parser.parseXyzUrl("C8C9D7D8D9_View.txt")
 
-		
+
 
 
 //var geoPlot = new GeoPlot(plotData);
@@ -143,36 +144,36 @@ function brushEnd(p) {
 }
 
 function createBarChart() {
-	var xExtent = d3.extent(plotData.readings, function(d) { return d.z; });
+	var xExtent = d3.extent(plotData.readings);
 	var binWidth = (xExtent[1] - xExtent[0]) / numBins;
-	
+
 	var scale = d3.scale.linear()
 	.domain([xExtent[0], xExtent[1]])
 	.rangeRound([0, numBins]);
-	
+
 	var colorDomain = d3.range(xExtent[0], xExtent[1], (xExtent[1] - xExtent[0]) / (colors.length - 1));
 	colorDomain.push(xExtent[1]);
 	var colorScale = d3.scale
 	.linear()
 	.domain(colorDomain)
 	.range(colors);
-	
+
 	for (var i = 0; i < 20; i++) {
-		console.log(plotData.readings[i].z + " - " + scale(plotData.readings[i].z) + " - " + scale.invert(scale(plotData.readings[i].z)));
+		//console.log(plotData.readings[i].z + " - " + scale(plotData.readings[i].z) + " - " + scale.invert(scale(plotData.readings[i].z)));
 	}
-	
+
 	var cf = crossfilter(plotData.readings);
 	var all = cf.groupAll();
-	var dimCategory = cf.dimension(function(d) { return d.z; })
+	var dimCategory = cf.dimension(function(d) { return d; })
 	var categoryGroup = dimCategory.group(function(d){return scale.invert(scale(d));});
-	
+
 	var a = categoryGroup.top(30);
 	console.log("There are " + a[0].value + " " + a[0].key + " legs in my house.");
 	console.log("There are " + a[1].value + " " + a[1].key + " legs in my house.");
 	console.log("There are " + a[2].value + " " + a[2].key + " legs in my house.");
 	console.log("There are " + a[3].value + " " + a[3].key + " legs in my house.");
-	
-	
+
+
 	/* Create a bar chart and use the given css selector as anchor. You can also specify
 	 * an optional chart group for this chart to be scoped within. When a chart belongs
 	 * to a specific group then any interaction with such chart will only trigger redraw
@@ -222,31 +223,31 @@ function createBarChart() {
 	    // (optional) whether chart should render titles, :default = false
 	    //.renderTitle(true);
 	;
-	
+
 	barChart.renderlet(function(chart){
 	    chart.selectAll("rect.stack0").each(function(d){
 	    	d3.select(this).attr("style", "fill: " + colorScale(d.key));
 	    });
 	})
-	
+
 	/* d3.selectAll("#readingsBarChart").each(function(d) {
 		d.on("brush", brushChanged);
 	    d.on("brushend", brushEnd); });
 	 */
-	 
-	
-	
+
+
+
 	//chart.colors(["#a60000","#ff0000", "#ff4040","#ff7373","#67e667","#39e639","#00cc00"]);
-	
+
 	//simply call renderAll() to render all charts on the page
 	dc.renderAll();
-	
+
 	//d3.select("barChart").on(".brushend", brushEnd);
-	
+
 	/* var chart1 = d3.selectAll(".chart")
 	.each(function(chart) { chart.on(".brush", brushChanged)
 	                             .on(".brushend", brushEnd); }); */
-	
+
 	brush = barChart.brush();
 	barChart.brush().on("brushend", brushEnd);
 	barChart.brush().on("brush", brushChanged);
