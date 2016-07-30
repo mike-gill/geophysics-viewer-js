@@ -10,7 +10,7 @@ function GeoPlot(plotData) {
 		var readings = plotData.readings;
 		for (var i = 0; i < readings.length; i++) {
 			var colorString = colorScale(readings[i]);
-			console.log(readings[i] + "  :  " + colorString);
+			//console.log(readings[i] + "  :  " + colorString);
 			this.setPixel(
 				imageData,
 				i,
@@ -80,7 +80,7 @@ function GeoDataParser(callbackContext, callback) {
 
 	this.parseXyzText = function(text) {
 		var readingsXyz = d3.csv.parseRows(text, function(d) {
-			console.log(d[1]);
+			//console.log(d[1]);
 			return {
 			    x: parseInt(d[0]),
 			    y: parseInt(d[1]) - 1,
